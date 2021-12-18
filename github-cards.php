@@ -1,17 +1,17 @@
 <?php
 
 /**
- * Plugin Name:       Github Profile Card
- * Plugin URI:        https://github.com
- * Description:       Display a Profile summary through Github's API
- * Version:           1.10.3
+ * Plugin Name:       Flair - Github
+ * Plugin URI:        https://github.com/M4N0JKUM4R/WordPress-Github-Cards
+ * Description:       Display a profile summary through Github's API
+ * Version:           1.0.0
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Manoj Kumar
  * Author URI:        https://manojkumar.online
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       github-profile-card
+ * Text Domain:       Flair-Github
  * Domain Path:       /languages
  */
 
@@ -20,24 +20,60 @@ if( !defined("ABSPATH") ) {
     die();
 }
 
-function custom_scripts() {
-    $js_src = plugin_dir_url(__FILE__).'js/script.js';
-    $js_ver = filemtime(plugin_dir_path(__FILE__).'js/script.js');
+// Add necessary scripts and styles - Link their versions automatically based on the server functions
 
-    $css_src = plugin_dir_url(__FILE__).'css/style.css';
-    $css_ver = filemtime(plugin_dir_path(__FILE__).'css/style.css');
+function gshf_custom_scripts() {
+    $js_src = plugin_dir_url(__FILE__).'js/script-min.js';
+    $js_ver = filemtime(plugin_dir_path(__FILE__).'js/script-min.js');
 
-    wp_enqueue_script("github-profile", $js_src, array('jquery'), $js_ver, true);
-    wp_enqueue_style("github-profile", $css_src, "", $css_ver);
+    $css_src = plugin_dir_url(__FILE__).'css/style-min.css';
+    $css_ver = filemtime(plugin_dir_path(__FILE__).'css/style-min.css');
+
+    wp_enqueue_script("gshf-github-profile", $js_src, array('jquery'), $js_ver, true);
+    wp_enqueue_style("gshf-github-profile", $css_src, "", $css_ver);
 }
 
-add_action("wp_enqueue_scripts", "custom_scripts");
+add_action("wp_enqueue_scripts", "gshf_custom_scripts");
 
-function github_shortcode_fn() {
+// Add shortcode [github-flair] with an attribute user
+
+function gshf_github_shortcode_fn( $atts ) {
+
+    // Default shortcode that can be overwritten
+
+    $attr = shortcode_atts( array(
+        "user" => "Github",
+        "show-search" => "yes"
+    ), $atts);
+
     ob_start();
-    include "card.php";
+    
+    ?>
+
+    <!-- Card render -->
+
+    <div class="gshf-container" data-user="<?php echo $attr['user']; ?>" >
+
+        <?php if( $attr['show-search'] == "yes") { ?> 
+            <form class="gshf-search">
+                <input type="search" class="gshf-search-user" placeholder="Enter at least 3 characters" />
+                <div class="gshf-search-output">
+                </div>
+            </form>
+        <?php } ?>
+        <div class="gshf-user-card">
+        </div>
+        <div class="gshf-loader">
+            <div class="gshf-loader-progress"></div>
+        </div>
+    </div>
+
+    <!-- Finish Card rendering -->
+
+    <?php
+
     $html = ob_get_clean();
     return $html;
 }
 
-add_shortcode("github-profile-search", "github_shortcode_fn");
+add_shortcode("github-flair", "gshf_github_shortcode_fn");

@@ -1,11 +1,13 @@
 const githubAPI = "https://api.github.com/users/"
-const userCard = document.querySelector(".user-card")
-const searchEl = document.querySelector(".search input") 
-const form = document.querySelector("form.search")
-
+const userCard = document.querySelector(".gshf-user-card")
+const searchEl = document.querySelector(".gshf-search input")
+const form = document.querySelector("form.gshf-search")
+const defaultUser = document.querySelector("[data-user]")
 const searchAPI = "https://api.github.com/search/users?q="
 
-let searchOutputcontainer = document.querySelector(".search-output")
+let searchOutputcontainer = document.querySelector(".gshf-search-output")
+
+// Call the Github users API 
 
 async function githubUsers(user) {
     userCard.innerHTML = `<div class="loading"><img src="https://github.githubassets.com/images/modules/logos_page/Octocat.png" /></div>`
@@ -16,9 +18,6 @@ async function githubUsers(user) {
     const repoAPI = await fetch(githubAPI + user + "/repos")
     const repoResponse = await repoAPI.json()
 
-    console.log(response)
-    console.log(repoResponse)
-
     const progressLoader = await loader()
     
     createCard(response,repoResponse)
@@ -26,8 +25,11 @@ async function githubUsers(user) {
     userCard.classList.remove("loading");
 }
 
-githubUsers("github")
+// Default user to be called
 
+githubUsers(defaultUser.getAttribute("data-user"))
+
+// Create cards based on the fetched results
 
 function createCard(data,repoData) {
 
@@ -54,8 +56,6 @@ function createCard(data,repoData) {
     
             repoData.sort((firstItem,secondItem) => secondItem.stargazers_count - firstItem.stargazers_count)
 
-            console.log(repoData)
-
             repoData.slice(0,9).forEach((repo,index) => {
         
             const {html_url,name,stargazers_count} = repo
@@ -70,19 +70,20 @@ function createCard(data,repoData) {
                         
 }
 
+// Show the progress bar based on arbitrary value
 
 function loader() {
     let loaderElement = document.createElement("div")
     let loadingProgress = document.createElement("div")
-    loaderElement.classList.add("loader")
-    loadingProgress.classList.add("loader-progress")
+    loaderElement.classList.add("gshf-loader")
+    loadingProgress.classList.add("gshf-loader-progress")
     loaderElement.append(loadingProgress)
     userCard.append(loaderElement)
     let progress = 10
     return new Promise((resolve, reject) => {
         let intervalProgress = setInterval(() => {
             loadingProgress.style.width = `${progress}%`
-            console.log(progress)
+           
             if(progress > 100) {
                 progress = 100;
                 loadingProgress.style.width = `100%`
@@ -92,10 +93,6 @@ function loader() {
             progress+=5
         }, 100);
     })  
-}
-
-function compareNumbers(a,b) {
-    return a - b;
 }
 
 function checkBio(bioData) {
@@ -125,11 +122,12 @@ function checkName(nameData) {
 
 function noUser() {
     userCard.innerHTML = `No such user. <img src="https://github.githubassets.com/images/modules/logos_page/Octocat.png" />`
-    console.log("No user")
+
 }
 
-async function getInput() {
+// Wait for sometime for the user to complete their search term before requesting the API
 
+async function getInput() {
     const type = await writing();
     searchFunc(type)
 }
@@ -149,22 +147,27 @@ const writing = () => {
     })
 }
 
-searchEl.addEventListener("input", () => {
-    getInput()
+if(searchEl !== null) {
+    searchEl.addEventListener("input", () => {
+        getInput()
+    
+        if(searchEl.value.length == 0) {
+            searchOutputcontainer.innerHTML = ``;
+        }
+    })
+} 
 
-    if(searchEl.value.length == 0) {
-        searchOutputcontainer.innerHTML = ``;
-    }
-})
-
+// Call the search API and wait
 
 const searchFunc = async (user) => {
     let searchQuery = await fetch(searchAPI + user)
     let searchResponse = await searchQuery.json()
-    console.log(searchResponse)
+  
     searchOutputcontainer.innerHTML = ""
     showSearch(searchResponse)
 }
+
+// Create search elements
 
 const showSearch = (searchData) => {
 
@@ -188,17 +191,20 @@ const showSearch = (searchData) => {
     }
 }
 
-form.addEventListener("submit", (e) => {
-    e.preventDefault();
-})
+// Stop the form from loading the page on enter
+
+if(form !== null) {
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+    })
+}
+
+// Clear the input form if there is a click outside the form
 
 document.addEventListener("click",(e) => {
     const checkClick = e.composedPath().includes(form)
     
-    if(checkClick) {
-        console.log("Clicked inside")
-    } else {
+    if(!checkClick) {
         searchOutputcontainer.innerHTML = ``;
     }
-
 })
