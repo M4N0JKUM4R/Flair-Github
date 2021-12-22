@@ -1,7 +1,7 @@
 const githubAPI = "https://api.github.com/users/"
 const userCard = document.querySelector(".gshf-user-card")
 const searchEl = document.querySelector(".gshf-search input")
-const form = document.querySelector("form.gshf-search")
+const formSearch = document.querySelector("form.gshf-search")
 const defaultUser = document.querySelector("[data-user]")
 const searchAPI = "https://api.github.com/search/users?q="
 
@@ -167,12 +167,14 @@ const searchFunc = async (user) => {
     showSearch(searchResponse)
 }
 
+let totalResults = formSearch.getAttribute("data-results");
+
 // Create search elements
 
 const showSearch = (searchData) => {
 
     if(searchData.total_count) {
-        searchData.items.slice(0,5).forEach(searchItem => {
+        searchData.items.slice(0,totalResults).forEach(searchItem => {
             
             const {login,avatar_url,type} = searchItem;
 
@@ -193,8 +195,8 @@ const showSearch = (searchData) => {
 
 // Stop the form from loading the page on enter
 
-if(form !== null) {
-    form.addEventListener("submit", (e) => {
+if(formSearch !== null) {
+    formSearch.addEventListener("submit", (e) => {
         e.preventDefault();
     })
 }
@@ -202,7 +204,7 @@ if(form !== null) {
 // Clear the input form if there is a click outside the form
 
 document.addEventListener("click",(e) => {
-    const checkClick = e.composedPath().includes(form)
+    const checkClick = e.composedPath().includes(formSearch)
     
     if(!checkClick) {
         searchOutputcontainer.innerHTML = ``;
